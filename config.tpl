@@ -1,5 +1,5 @@
 <?php
-    define("WEBPATH","");
+    define("WEBPATH","http://localhost/PHP_Structure/");
     define("ADMIN_PATH",WEBPATH.'Admin/');
     define('SESSIONTIME',$_SERVER['REQUEST_TIME']);
     define('TIMEOUT',3600);
