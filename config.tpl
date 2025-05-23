@@ -12,6 +12,44 @@
 
     date_default_timezone_set("Asia/Kolkata");
 
+    // Security Headers
+    // Set X-Content-Type-Options to prevent MIME-sniffing
+    header("X-Content-Type-Options: nosniff");
+
+    // Set X-Frame-Options to protect against clickjacking
+    // Use 'SAMEORIGIN' to allow framing by the site itself, or 'DENY' to prevent all framing
+    header("X-Frame-Options: SAMEORIGIN");
+
+    // Set Referrer-Policy for better control over referrer information
+    header("Referrer-Policy: strict-origin-when-cross-origin");
+
+    // Content Security Policy (CSP) - A starting point
+    // This policy allows resources from 'self' (same origin), inline scripts/styles, 
+    // and data URIs for images/fonts. It blocks plugins and restricts framing to 'self'.
+    // For a production environment, aim to remove 'unsafe-inline' for scripts and styles
+    // by refactoring inline event handlers and styles.
+    $cspDirectives = [
+        "default-src 'self'",
+        "script-src 'self' 'unsafe-inline'", // Allows inline JS and scripts from the same origin
+        "style-src 'self' 'unsafe-inline'",  // Allows inline CSS and styles from the same origin
+        "img-src 'self' data:",              // Allows images from the same origin and data URIs
+        "font-src 'self' data:",               // Allows fonts from the same origin and data URIs
+        "object-src 'none'",                 // Disallows embedding objects like Flash, Java applets
+        "frame-ancestors 'self'",            // Similar to X-Frame-Options: SAMEORIGIN, controls embedding
+        // "form-action 'self'",             // Optional: Restricts where forms can submit to
+        // "base-uri 'self'",                // Optional: Restricts what can be used in <base> tags
+        // "report-uri /csp-violation-report-endpoint.php;", // Optional: For browsers to report CSP violations
+    ];
+    header("Content-Security-Policy: " . implode('; ', $cspDirectives));
+
+    // HTTP Strict Transport Security (HSTS)
+    // IMPORTANT: ONLY uncomment and enable HSTS if your entire site is consistently served over HTTPS
+    // and you understand the implications. If misconfigured, your site could become inaccessible.
+    // Start with a short max-age for testing, e.g., max-age=60 (1 minute), then gradually increase.
+    // A common production value is max-age=31536000 (1 year).
+    // // header("Strict-Transport-Security: max-age=60;"); // Example: 1 minute for testing
+    // // header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload"); // Production example
+
     //SERVER
     define("CATALOG","catalog/");
     define("CONTROLLER","controller/");
