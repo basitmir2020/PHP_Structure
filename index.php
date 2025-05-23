@@ -17,9 +17,10 @@
       } else {
           // Web router uses CoreRouter
           require_once LIB."CoreRouter.tpl";
-          // Parameters for CoreRouter: essentialsClassName, defaultViewName, defaultTitle, standaloneRoutes
-          // htmlEssentials is assumed to be loaded via config.tpl
+          // Parameters for CoreRouter: templateNamePrefix, defaultViewName, defaultTitle, standaloneRoutes
+          // CoreEssentials is now loaded via config.tpl
           // "index" is the default view/title. "Login" is a standalone page.
-          $app = new CoreRouter("htmlEssentials", "index", "index", ["Login"]);
+          // The templateNamePrefix for the main site is an empty string.
+          $app = new CoreRouter("", "index", "index", ["Login"]);
       }
 ?>
