@@ -47,6 +47,7 @@
 
     require_once VIEW. "CoreEssentials.tpl"; // Replaced htmlEssentials with CoreEssentials
     require_once CATALOG.'validation.tpl';
+    require_once CATALOG."Validator.tpl"; // Added Validator
     require_once DBASE.'dbContext.tpl';
     require_once CATALOG.'functions.tpl';
 

@@ -54,23 +54,25 @@ class accountsApiController {
                 break;
 
             case 'POST':
-                $name = $requestData['name'] ?? null;
-                $email = $requestData['email'] ?? null;
+                // Validator is expected to be included via config.tpl
+                $validator = new Validator();
+                $rules = [
+                    'name' => ['required', 'minLength:2', 'maxLength:50'],
+                    'email' => ['required', 'email', 'maxLength:100']
+                ];
 
-                // Validate required fields
-                if (!$name || !$email) {
-                    $errors = [];
-                    if (!$name) $errors['name'] = 'Name is required';
-                    if (!$email) $errors['email'] = 'Email is required';
-                    $api->sendError("Missing required fields for creating account", 400, $errors);
-                    return; // Exit early
+                // Assuming $requestData holds the JSON payload or POST data
+                if (!$validator->validate($requestData, $rules)) {
+                    $api->sendError("Validation failed", 400, $validator->getErrors());
+                    return; // Important to stop further execution
                 }
 
-                // Validate email format (business logic, not SQL sanitization)
-                if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                    $api->sendError("Invalid email format", 400, ['email' => 'Invalid email format']);
-                    return; // Exit early
-                }
+                // If validation passes, proceed with data extraction and database logic
+                // Note: $requestData contains the raw data. It's good practice to use the validated fields.
+                // The Validator class doesn't sanitize, only validates.
+                // For this use case, $requestData['name'] and $requestData['email'] are used directly.
+                $name = $requestData['name']; 
+                $email = $requestData['email'];
 
                 // Name and email are used directly in prepared statement parameters
                 $success = $db->insert("INSERT INTO accounts (name, email) VALUES (?, ?)", [$name, $email]);
@@ -80,14 +82,10 @@ class accountsApiController {
                     if ($newId) {
                         $api->sendResponse(['message' => 'Account created successfully', 'id' => $newId], 201);
                     } else {
-                        // Should not happen if insert succeeded and table has auto-increment PK
-                        // but lastInsertId might return "0" if not applicable, or false on error with some drivers.
-                        // The dbContext insert doesn't guarantee lastInsertId is meaningful if the table isn't set up for it.
-                        // For now, assume it works or a generic success is okay.
                         $api->sendResponse(['message' => 'Account created successfully, ID retrieval issue'], 201);
                     }
                 } else {
-                    // dbContext logs the detailed error
+                    // dbContext logs the detailed error internally
                     $api->sendError("Failed to create account", 500);
                 }
                 break;
