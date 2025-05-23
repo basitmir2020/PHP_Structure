@@ -41,9 +41,6 @@ class ViewManager { // Renamed from CoreEssentials
      */
     public function body(string $bodyViewName, string $title, $arg = false, bool $noInclude = false) {
         // The $arg variable will be available within the included $viewFilePath template.
-<<<<<<< HEAD
-        $viewFilePath = VIEW . strtolower($bodyViewName) . ".tpl";
-=======
         
         // New path construction logic for $viewFilePath
         $parts = explode('/', $bodyViewName);
@@ -58,7 +55,6 @@ class ViewManager { // Renamed from CoreEssentials
             // Fallback if no module path, though router should always provide it now
             $viewFilePath = rtrim(ROOT, '/\\') . '/' . rtrim(VIEW, '/\\') . '/' . $viewFile;
         }
->>>>>>> cc4ee689bdc1f642d96f230e284fd6de713c3d61
 
         if ($noInclude) {
             include $viewFilePath;
