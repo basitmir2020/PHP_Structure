@@ -1,29 +1,31 @@
 <?php
 namespace App\Interfaces\Service;
 
+use App\Model\AccountModel; // Added use statement
+
 interface IAccountService {
     /**
      * Retrieves all accounts.
      *
-     * @return array An array of all accounts. Empty array if none.
+     * @return AccountModel[] An array of all accounts. Empty array if none.
      */
-    public function getAllAccounts(): array;
+    public function getAllAccounts(): array; // PHP return type is kept as array
 
     /**
      * Retrieves a specific account by its ID.
      *
      * @param int $id The ID of the account.
-     * @return array|null The account data as an array, or null if not found.
+     * @return AccountModel|null The account model, or null if not found.
      */
-    public function getAccountById(int $id): ?array;
+    public function getAccountById(int $id): ?AccountModel; // Updated return type
 
     /**
      * Creates a new account.
      *
      * @param array $data Associative array containing account data (e.g., ['name' => ..., 'email' => ...]).
      *                    Assumes data is already validated.
-     * @return int|null The ID of the newly created account, or null on failure.
+     * @return AccountModel|null The created account model, or null on failure.
      */
-    public function createAccount(array $data): ?int;
+    public function createAccount(array $data): ?AccountModel; // Updated return type
 }
 ?>
