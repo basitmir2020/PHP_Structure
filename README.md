@@ -59,6 +59,18 @@ This project follows a Model-View-Controller (MVC) like pattern. Below is an ove
 This project now includes API endpoints for accessing and managing resources.
 The base path for all API routes is `/api`.
 
+### Authentication
+
+All API requests require authentication via an API key. The API key must be included in the `X-API-KEY` header of your request.
+
+Example using `curl`:
+
+```bash
+curl -H "X-API-KEY: your-super-secret-api-key-12345" http://localhost/PHP_Structure/api/accounts
+```
+
+Replace `your-super-secret-api-key-12345` with a valid API key. Requests without a valid API key will receive a `401 Unauthorized` error.
+
 ### Accounts Endpoint (`/api/accounts`)
 
 #### GET `/api/accounts`
