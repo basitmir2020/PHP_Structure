@@ -6,25 +6,28 @@ class ViewManager { // Renamed from CoreEssentials
     private $headerTplPath;
     private $navigationTplPath;
     private $footerTplPath;
+    private $baseIncludePath; // Added for clarity and potential reuse
 
     /**
      * Constructor for ViewManager.
      *
-     * @param string $templateNamePrefix Prefix for template file names. 
-     *                                   Example: "" for public site (Header.tpl), 
-     *                                   "__Admin__" for admin site (__Admin__Header.tpl).
+     * @param string $context The context for loading views (e.g., "public", "admin").
+     *                        Determines the subdirectory under includes/ for partials.
      */
-    public function __construct(string $templateNamePrefix = "") {
+    public function __construct(string $context) { // Changed parameter
         // Assuming ROOT is absolute path to project dir (e.g., C:\xampp\htdocs\PHP_Structure\)
         // and INC is "includes/" (relative to ROOT)
         
-        $rootPath = rtrim(ROOT, '/\\'); // Normalize ROOT path (double backslash for literal in string)
-        $incPath = trim(INC, '/\\');   // Normalize INC path (double backslash for literal in string)
+        $rootPath = rtrim(ROOT, '/\\'); // Normalize ROOT path
+        $incRootFolderName = trim(INC, '/\\');   // Normalize INC path (e.g. "includes")
 
-        // Use DIRECTORY_SEPARATOR for cross-platform compatibility
-        $this->headerTplPath     = $rootPath . DIRECTORY_SEPARATOR . $incPath . DIRECTORY_SEPARATOR . $templateNamePrefix . "Header.tpl";
-        $this->navigationTplPath = $rootPath . DIRECTORY_SEPARATOR . $incPath . DIRECTORY_SEPARATOR . $templateNamePrefix . "Navigation.tpl";
-        $this->footerTplPath     = $rootPath . DIRECTORY_SEPARATOR . $incPath . DIRECTORY_SEPARATOR . $templateNamePrefix . "Footer.tpl";
+        // $context is expected to be "public" or "admin" (already lowercased by CoreRouter)
+        $this->baseIncludePath = $rootPath . DIRECTORY_SEPARATOR . $incRootFolderName . DIRECTORY_SEPARATOR . $context . DIRECTORY_SEPARATOR;
+
+        // Filenames are now generic as the context directory handles the distinction
+        $this->headerTplPath     = $this->baseIncludePath . "Header.tpl";
+        $this->navigationTplPath = $this->baseIncludePath . "Navigation.tpl";
+        $this->footerTplPath     = $this->baseIncludePath . "Footer.tpl";
     }
 
     private function header($title) {

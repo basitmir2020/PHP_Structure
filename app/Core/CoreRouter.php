@@ -4,33 +4,29 @@ namespace App\Core;
 // ViewManager class is expected to be available via autoloader.
 class CoreRouter {
     private $modulePath; 
-    private $templateNamePrefix; 
-    private $defaultControllerName; // New property
-    private $defaultMethodName;     // New property
-    // private $defaultViewName;    // Removed
-    // private $defaultTitle;       // Removed
-    // private $standaloneRoutes;   // Removed
+    // private $templateNamePrefix; // Removed
+    private $defaultControllerName; 
+    private $defaultMethodName;     
     private $essentialsInstance; // Instance of ViewManager
 
     public function __construct(
         string $modulePath, 
-        string $templateNamePrefix, 
-        string $defaultControllerName, // New parameter
-        string $defaultMethodName = 'index' // New parameter with default
+        // string $templateNamePrefix, // Removed
+        string $defaultControllerName, 
+        string $defaultMethodName = 'index'
     ) {
         $this->modulePath = $modulePath; 
-        $this->templateNamePrefix = $templateNamePrefix; 
-        $this->defaultControllerName = $defaultControllerName; // Assign new property
-        $this->defaultMethodName = $defaultMethodName;       // Assign new property
+        // $this->templateNamePrefix = $templateNamePrefix; // Removed assignment
+        $this->defaultControllerName = $defaultControllerName; 
+        $this->defaultMethodName = $defaultMethodName;       
 
         // ViewManager is expected to be included/available via autoloader.
         if (!class_exists("\\App\\Core\\ViewManager")) { 
             error_log("CoreRouter Error: View manager class '\\App\\Core\\ViewManager' not found. Make sure app/Core/ViewManager.php is available and autoloadable.");
-            // Potentially throw an exception or handle more gracefully
             return; 
         }
-        // Instantiate ViewManager, passing the template name prefix
-        $this->essentialsInstance = new \App\Core\ViewManager($this->templateNamePrefix); 
+        // Instantiate ViewManager, passing the lowercased modulePath as context
+        $this->essentialsInstance = new \App\Core\ViewManager(strtolower($this->modulePath)); 
 
         $this->route();
     }
