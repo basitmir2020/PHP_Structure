@@ -21,7 +21,7 @@
           // CoreEssentials (now ViewManager) is autoloaded via App\Core namespace
           // "index" is the default view/title. "Login" is a standalone page.
           // The templateNamePrefix for the main site is an empty string.
-          // modulePath="public"
-          $app = new \App\Core\CoreRouter("public", "", "index", "index", ["Login"]); // Use FQN, added modulePath
+          // modulePath="Public", templateNamePrefix="", defaultControllerName="Home", defaultMethodName="index"
+          $app = new \App\Core\CoreRouter("Public", "", "Home", "index"); // Use FQN, updated for new constructor
       }
 ?>
