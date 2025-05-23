@@ -45,7 +45,7 @@
     define('LOGIN_MESSAGE','Successfully Logged In!');
 
 
-    require_once VIEW. "htmlEssentials.tpl";
+    require_once VIEW. "CoreEssentials.tpl"; // Replaced htmlEssentials with CoreEssentials
     require_once CATALOG.'validation.tpl';
     require_once DBASE.'dbContext.tpl';
     require_once CATALOG.'functions.tpl';

@@ -1,33 +1,31 @@
 <?php
+<?php
+    // CoreEssentials class is expected to be available (e.g. included via config.tpl or autoloader)
     class CoreRouter {
-        private $essentialsClassName;
+        private $templateNamePrefix; // Changed from essentialsClassName
         private $defaultViewName;
         private $defaultTitle;
         private $standaloneRoutes;
         private $essentialsInstance;
 
         public function __construct(
-            string $essentialsClassName,
+            string $templateNamePrefix, // Changed from essentialsClassName
             string $defaultViewName,
             string $defaultTitle,
             array $standaloneRoutes = []
         ) {
-            $this->essentialsClassName = $essentialsClassName;
+            $this->templateNamePrefix = $templateNamePrefix; // Changed from essentialsClassName
             $this->defaultViewName = $defaultViewName;
             $this->defaultTitle = $defaultTitle;
             $this->standaloneRoutes = $standaloneRoutes;
 
-            // Instantiate the essentials class
-            // Assumes the class file is already included (e.g., via config.tpl)
-            if (!class_exists($this->essentialsClassName)) {
-                error_log("CoreRouter Error: Essentials class '{$this->essentialsClassName}' not found.");
-                // Depending on desired behavior, could throw an exception or return to stop execution.
-                // For now, as per prompt, assume it will exist or log and continue (which might lead to errors later).
-                // To be robust, an exception or early return would be better if class is critical.
-                // However, if essentialsInstance is not created, method_exists check later will fail.
+            // CoreEssentials is expected to be included/available globally.
+            if (!class_exists("CoreEssentials")) {
+                error_log("CoreRouter Error: Essentials class 'CoreEssentials' not found. Make sure view/CoreEssentials.tpl is included.");
                 return; 
             }
-            $this->essentialsInstance = new $this->essentialsClassName();
+            // Instantiate CoreEssentials, passing the template name prefix
+            $this->essentialsInstance = new CoreEssentials($this->templateNamePrefix);
 
             $this->route();
         }
@@ -58,8 +56,6 @@
                 if (isset($url[1])) {
                     $argument = $url[1];
                 }
-                // No specific "index" override is needed here as per prompt,
-                // default behavior covers $url[0] becoming the viewName.
             }
             
             // Call the body method of the instantiated essentials class
@@ -67,15 +63,12 @@
                 $this->essentialsInstance->body($viewName, $title, $argument, $isStandalonePage);
             } else {
                 if (!$this->essentialsInstance) {
-                     error_log("CoreRouter Error: Essentials instance of '{$this->essentialsClassName}' was not created (likely class not found). Cannot call 'body'.");
+                     error_log("CoreRouter Error: Essentials instance of 'CoreEssentials' was not created (likely class 'CoreEssentials' not found). Cannot call 'body'.");
                 } else {
-                     error_log("CoreRouter Error: Method 'body' not found in class '{$this->essentialsClassName}'.");
+                     error_log("CoreRouter Error: Method 'body' not found in class 'CoreEssentials'.");
                 }
-                // Potentially display a generic error page to the user.
-                // For example:
-                // echo "A critical error occurred. Please contact support.";
-                // exit;
             }
         }
     }
+?>
 ?>
