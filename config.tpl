@@ -6,6 +6,9 @@
     include('catalog/session.tpl');
     session::start();
     error_reporting(E_ALL);
+    // For production APIs, consider setting ini_set('display_errors', '0');
+    // and implementing robust logging. The ApiController is designed to send
+    // JSON errors, but this would prevent raw PHP errors from being output.
 
     date_default_timezone_set("Asia/Kolkata");
 
@@ -25,6 +28,10 @@
     define("VIEW","view/");
     define("VENDOR",WEBPATH.'vendor/');
     define("FONTS",WEBPATH."fonts/");
+
+    // API Specific
+    define("API_BASE_PATH", "/api"); // Base path for all API routes
+    define("API_VERSION", "v1");     // Current API version
 
     //LOGOUT ROUTES
     define('USER_LOGOUT',WEBPATH."login".'?RID=103');
