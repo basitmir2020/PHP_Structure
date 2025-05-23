@@ -2,19 +2,25 @@
 namespace App\Http\Api;
 
 use App\Http\BaseApiController;
-use App\Persistence\DbContext;
+use App\Interfaces\Service\IAccountService; // Added
+// use App\Persistence\DbContext; // Removed
 use App\Util\Validator;
-
-// Old require_once lines are removed as classes are autoloaded.
-// require_once DBASE . "dbContext.tpl"; 
-// require_once CONTROLLER . "apiController.tpl"; 
 
 /**
  * AccountsController
  * 
  * Handles API requests for the 'accounts' resource.
  */
-class AccountsController { // Renamed from accountsApiController
+class AccountsController {
+    private BaseApiController $api; // For sending responses
+    private Validator $validator;   // For validating input
+    private IAccountService $accountService; // For business logic and data access
+
+    public function __construct(IAccountService $accountService) {
+        $this->accountService = $accountService;
+        $this->api = new BaseApiController();
+        $this->validator = new Validator();
+    }
 
     /**
      * Handles the incoming API request.
@@ -24,63 +30,56 @@ class AccountsController { // Renamed from accountsApiController
      * @param array $requestData Optional data from the request body (for POST, PUT)
      */
     public function handleRequest($method, $id = null, $requestData = []) {
-        $api = new BaseApiController(); // Updated instantiation
-        $db = new DbContext();         // Updated instantiation
+        // Note: $this->api and $this->validator are now initialized in the constructor.
+        // $db property is removed, and $this->accountService is used instead.
 
         switch (strtoupper($method)) {
             case 'GET':
                 if ($id === null) {
-                    $data = $db->select("SELECT id, name, email FROM accounts");
-                    if ($data !== null) { 
-                        $api->sendResponse($data);
-                    } else {
-                        $api->sendError("Error fetching accounts", 500);
-                    }
+                    // Get all accounts
+                    $data = $this->accountService->getAllAccounts();
+                    // getAllAccounts returns an array, empty if none.
+                    $this->api->sendResponse($data);
                 } else {
+                    // Get a specific account by ID
                     if (!ctype_digit((string)$id) || (int)$id <= 0) { 
-                        $api->sendError("Invalid account ID format", 400);
+                        $this->api->sendError("Invalid account ID format", 400);
                         return;
                     }
-                    $data = $db->select("SELECT id, name, email FROM accounts WHERE id = ?", [$id]);
-                    if (!empty($data)) {
-                        $api->sendResponse($data[0]); 
+                    $account = $this->accountService->getAccountById((int)$id);
+                    if ($account !== null) {
+                        $this->api->sendResponse($account); 
                     } else {
-                        $api->sendError("Account not found", 404);
+                        $this->api->sendError("Account not found", 404);
                     }
                 }
                 break;
 
             case 'POST':
-                $validator = new Validator(); // Updated instantiation
+                // Validator instance is already available as $this->validator
                 $rules = [
                     'name' => ['required', 'minLength:2', 'maxLength:50'],
                     'email' => ['required', 'email', 'maxLength:100']
                 ];
 
-                if (!$validator->validate($requestData, $rules)) {
-                    $api->sendError("Validation failed", 400, $validator->getErrors());
+                if (!$this->validator->validate($requestData, $rules)) {
+                    $this->api->sendError("Validation failed", 400, $this->validator->getErrors());
                     return; 
                 }
 
-                $name = $requestData['name']; 
-                $email = $requestData['email'];
+                // Data for creation is $requestData, which has been validated.
+                // The service layer expects an array with 'name' and 'email'.
+                $newAccountId = $this->accountService->createAccount($requestData);
 
-                $success = $db->insert("INSERT INTO accounts (name, email) VALUES (?, ?)", [$name, $email]);
-
-                if ($success) {
-                    $newId = $db->getConnection()->lastInsertId();
-                    if ($newId) {
-                        $api->sendResponse(['message' => 'Account created successfully', 'id' => $newId], 201);
-                    } else {
-                        $api->sendResponse(['message' => 'Account created successfully, ID retrieval issue'], 201);
-                    }
+                if ($newAccountId !== null) {
+                    $this->api->sendResponse(['message' => 'Account created successfully', 'id' => $newAccountId], 201);
                 } else {
-                    $api->sendError("Failed to create account", 500);
+                    $this->api->sendError("Failed to create account", 500);
                 }
                 break;
 
             default:
-                $api->sendError("Method not allowed", 405);
+                $this->api->sendError("Method not allowed", 405);
                 break;
         }
     }
