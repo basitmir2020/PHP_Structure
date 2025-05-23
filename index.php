@@ -12,10 +12,15 @@
       }
 
       if ($isApiRequest) {
-          require LIB."apiRouting.tpl"; // Load API router
+          require_once LIB."apiRouting.tpl"; // Load API router
           $app = new ApiRouting();
       } else {
-          require LIB."routing.tpl";    // Load Web router
-          $app = new routing();
+          // Web router uses CoreRouter
+          require_once LIB."CoreRouter.tpl";
+          // Parameters for CoreRouter: templateNamePrefix, defaultViewName, defaultTitle, standaloneRoutes
+          // CoreEssentials is now loaded via config.tpl
+          // "index" is the default view/title. "Login" is a standalone page.
+          // The templateNamePrefix for the main site is an empty string.
+          $app = new CoreRouter("", "index", "index", ["Login"]);
       }
 ?>
