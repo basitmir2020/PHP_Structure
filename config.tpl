@@ -32,6 +32,8 @@
     // API Specific
     define("API_BASE_PATH", "/api"); // Base path for all API routes
     define("API_VERSION", "v1");     // Current API version
+    // API Authentication
+    define('VALID_API_KEYS', ['your-super-secret-api-key-12345']); // Add your desired secret key here
 
     //LOGOUT ROUTES
     define('USER_LOGOUT',WEBPATH."login".'?RID=103');
