@@ -100,4 +100,15 @@
         }
         return "<img src='".$loader.IMAGES."loader.gif"."' id='loader' style='display:none; width=15%;' />";
     }
+
+    /**
+     * Escapes a string for safe output in HTML.
+     * Prevents XSS vulnerabilities.
+     *
+     * @param string|null $string The string to escape. Defaults to null, which results in an empty string.
+     * @return string The escaped string.
+     */
+    function esc_html(string $string = null): string {
+        return htmlspecialchars($string ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    }
 ?>
