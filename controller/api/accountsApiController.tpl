@@ -25,50 +25,30 @@ class accountsApiController {
             case 'GET':
                 if ($id === null) {
                     // Get all accounts
-                    $sql = "SELECT id, name, email FROM accounts";
-                    $result = $db->select($sql);
-
-                    if ($result) {
-                        $data = [];
-                        // Standard way to fetch all rows if using mysqli
-                        if (method_exists($result, 'fetch_all')) { // mysqli_result
-                            $data = $result->fetch_all(MYSQLI_ASSOC);
-                        } else { // PDOStatement or other
-                            while ($row = $result->fetch_assoc()) { // Assuming fetch_assoc for mysqli
-                                $data[] = $row;
-                            }
-                        }
+                    $data = $db->select("SELECT id, name, email FROM accounts");
+                    // dbContext->select now returns an array, or an empty array on error/no results.
+                    // It logs errors internally.
+                    if ($data !== null) { // Check if $data is not null (though it should be [] on error from dbContext)
                         $api->sendResponse($data);
                     } else {
-                        $api->sendError("Error fetching accounts: " . $db->con->error, 500); // Added DB error for diagnostics
+                        // This case might be redundant if dbContext always returns [] on error.
+                        $api->sendError("Error fetching accounts", 500);
                     }
                 } else {
                     // Get a specific account by ID
-                    // Basic sanitization for ID (in a real app, use prepared statements)
-                    $sanitizedId = filter_var($id, FILTER_SANITIZE_NUMBER_INT); 
-                    if (!$sanitizedId) {
+                    // ID validation (e.g. numeric) can still be useful.
+                    if (!ctype_digit((string)$id) || (int)$id <= 0) { // Basic validation for positive integer ID
                         $api->sendError("Invalid account ID format", 400);
                         return;
                     }
-                    
-                    $sql = "SELECT id, name, email FROM accounts WHERE id = '$sanitizedId'";
-                    $result = $db->select($sql);
 
-                    if ($result) {
-                        if (method_exists($result, 'fetch_assoc')) { // mysqli_result
-                             $data = $result->fetch_assoc();
-                        } else { // Should not happen if select() consistent
-                            $api->sendError("Error fetching account data structure", 500);
-                            return;
-                        }
+                    $data = $db->select("SELECT id, name, email FROM accounts WHERE id = ?", [$id]);
 
-                        if ($data) {
-                            $api->sendResponse($data);
-                        } else {
-                            $api->sendError("Account not found", 404);
-                        }
+                    if (!empty($data)) {
+                        // $data is an array of rows, for specific ID, expect 0 or 1 row.
+                        $api->sendResponse($data[0]); 
                     } else {
-                        $api->sendError("Error fetching account: " . $db->con->error, 500); // Added DB error
+                        $api->sendError("Account not found", 404);
                     }
                 }
                 break;
@@ -77,34 +57,38 @@ class accountsApiController {
                 $name = $requestData['name'] ?? null;
                 $email = $requestData['email'] ?? null;
 
-                if ($name && $email) {
-                    // Basic sanitization (in a real app, use prepared statements and more robust validation)
-                    $sanitizedName = filter_var($name, FILTER_SANITIZE_STRING);
-                    $sanitizedEmail = filter_var($email, FILTER_SANITIZE_EMAIL);
-
-                    if (!filter_var($sanitizedEmail, FILTER_VALIDATE_EMAIL)) {
-                        $api->sendError("Invalid email format", 400, ['email' => 'Invalid email format']);
-                        return;
-                    }
-
-                    // In a real application, you would use mysqli_real_escape_string or prepared statements
-                    // For this example, assuming basic filtering is illustrative.
-                    $sql = "INSERT INTO accounts (name, email) VALUES ('$sanitizedName', '$sanitizedEmail')";
-                    $success = $db->insert($sql);
-
-                    if ($success) {
-                        // $db->con is private. Cannot get insert_id directly.
-                        // Consider adding a method to dbContext to get last insert ID.
-                        // For now, sending a generic success message.
-                        $api->sendResponse(['message' => 'Account created successfully'], 201);
-                    } else {
-                        $api->sendError("Failed to create account: " . $db->con->error, 500); // Added DB error
-                    }
-                } else {
+                // Validate required fields
+                if (!$name || !$email) {
                     $errors = [];
                     if (!$name) $errors['name'] = 'Name is required';
                     if (!$email) $errors['email'] = 'Email is required';
                     $api->sendError("Missing required fields for creating account", 400, $errors);
+                    return; // Exit early
+                }
+
+                // Validate email format (business logic, not SQL sanitization)
+                if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    $api->sendError("Invalid email format", 400, ['email' => 'Invalid email format']);
+                    return; // Exit early
+                }
+
+                // Name and email are used directly in prepared statement parameters
+                $success = $db->insert("INSERT INTO accounts (name, email) VALUES (?, ?)", [$name, $email]);
+
+                if ($success) {
+                    $newId = $db->getConnection()->lastInsertId();
+                    if ($newId) {
+                        $api->sendResponse(['message' => 'Account created successfully', 'id' => $newId], 201);
+                    } else {
+                        // Should not happen if insert succeeded and table has auto-increment PK
+                        // but lastInsertId might return "0" if not applicable, or false on error with some drivers.
+                        // The dbContext insert doesn't guarantee lastInsertId is meaningful if the table isn't set up for it.
+                        // For now, assume it works or a generic success is okay.
+                        $api->sendResponse(['message' => 'Account created successfully, ID retrieval issue'], 201);
+                    }
+                } else {
+                    // dbContext logs the detailed error
+                    $api->sendError("Failed to create account", 500);
                 }
                 break;
 
