@@ -1,58 +1,80 @@
 # PHP MVC and API Framework
 
-This project is a custom-built PHP application structured around the Model-View-Controller (MVC) architectural pattern. It serves as a foundational framework for developing web applications and JSON-based APIs.
+This project is a PHP application built to serve as a foundational framework for developing web applications and JSON-based APIs. It emphasizes a namespaced, layered architecture following principles similar to Model-View-Controller (MVC), promoting separation of concerns and maintainability.
 
-Key features include:
-*   **Dual Routing System:** Separate routing mechanisms for web pages (`library/routing.tpl`) and API endpoints (`library/apiRouting.tpl` via `/api/` prefix).
-*   **Administration Interface:** A dedicated `/Admin` section for administrative tasks, with its own routing and views.
-*   **Database Abstraction:** Secure database interactions are handled by a Data Access Object (`persistence/dbContext.tpl`) using PDO with prepared statements to prevent SQL injection.
-*   **API Capabilities:** A base API controller (`controller/apiController.tpl`) provides standardized JSON responses and error handling, with a sample API endpoint for account management (`controller/api/accountsApiController.tpl`).
-*   **Templating:** Uses `.tpl` files (though appearing as PHP files, they are used as templates) for rendering HTML views, with shared header/footer includes.
+**Key Architectural Features:**
 
-The framework is designed to be a starting point for building more complex PHP applications by providing a clear separation of concerns and essential components for web and API development.
+*   **Namespaced Codebase:** Organized under the `App\` namespace with PSR-4 autoloading.
+*   **Layered Design:**
+    *   **Controllers (`App\Controller`, `App\Http\Api`):** Handle incoming HTTP requests for web and API routes respectively.
+    *   **Services (`App\Service`):** Encapsulate core business logic, interacting with the persistence layer. Interfaces are defined in `App\Interfaces\Service`.
+    *   **Models (`App\Model`):** Represent data entities (e.g., `AccountModel`).
+    *   **Persistence (`App\Persistence`):** `DbContext` class handles database interactions using PDO with prepared statements for security.
+*   **Routing:**
+    *   `App\Core\CoreRouter`: Manages routing for web pages (public and admin).
+    *   `App\Http\ApiRouter`: Manages routing for API requests (prefixed `/api/`).
+*   **View Rendering:**
+    *   `App\Core\ViewManager`: Handles rendering of `.tpl` template files, supporting layouts with headers/footers for different site sections (public, admin).
+*   **Admin Portal:** A dedicated section for administration, leveraging the same core components but with its own routing configurations and templates.
+*   **Security Enhancements:**
+    *   SQL Injection prevention via PDO prepared statements.
+    *   API Key authentication for API endpoints.
+    *   Secure session management (HttpOnly, Secure, SameSite flags; session ID regeneration).
+    *   Helper for secure cookie management.
+    *   Input validation (`App\Util\Validator`).
+    *   Output encoding (`esc_html()` helper) for XSS prevention in views.
+    *   Standard HTTP security headers (CSP, X-Frame-Options, etc.).
+
+The framework provides a structured starting point for building more complex PHP applications with a focus on modern practices and security.
 
 ### Project Structure
 
-This project follows a Model-View-Controller (MVC) like pattern. Below is an overview of the key directories and files:
+This project now follows a namespaced, layered architecture with a clear separation of concerns. The primary application code resides within the `app/` directory, adhering to PSR-4 autoloading for the `App\` namespace.
 
-*   **`/` (Root Directory)**
-    *   `index.php`: The main entry point for the public-facing web application. It initializes configuration and routes requests to the appropriate web controllers via `library/routing.tpl` or API requests via `library/apiRouting.tpl`.
-    *   `config.tpl`: Contains global configuration settings, including database credentials, path constants, session initialization, and error reporting levels. It also includes essential library files.
-    *   `.htaccess`: (Typically) Used for URL rewriting (e.g., to direct all requests to `index.php`) and other Apache web server configurations.
+*   **`app/`**: Root directory for all namespaced application code.
+    *   **`Core/`**: Contains core framework classes essential for application operation.
+        *   `CoreRouter.php`: Handles routing for web pages (public and admin), dispatching requests to appropriate controllers.
+        *   `ViewManager.php`: Manages view template rendering, including headers, footers, and navigation partials.
+    *   **`Controller/`**: Houses web controller classes, organized by module.
+        *   `Admin/`: Controllers specific to the Admin portal (e.g., `AuthController.php`).
+        *   `Public/`: Controllers for the public-facing website (e.g., `HomeController.php`, `LoginController.php`).
+    *   **`Http/`**: Contains classes related to HTTP request and response handling, primarily for the API.
+        *   `Api/`: API resource controllers (e.g., `AccountsController.php`).
+        *   `ApiRouter.php`: Handles routing for all API requests (prefixed with `/api/`).
+        *   `BaseApiController.php`: Provides common methods for API controllers to send JSON responses and errors.
+    *   **`Interfaces/`**: Defines PHP interfaces, promoting contract-based programming.
+        *   `Service/`: Interfaces for service layer classes (e.g., `IAccountService.php`).
+    *   **`Model/`**: Contains data model classes representing application entities.
+        *   `AccountModel.php`: Example model for account data.
+    *   **`Persistence/`**: Manages data persistence and database interactions.
+        *   `DbContext.php`: Data access layer using PDO and prepared statements for secure database operations.
+    *   **`Service/`**: Contains business logic service classes.
+        *   `AccountService.php`: Example service implementing `IAccountService` for account-related operations.
+    *   **`Util/`**: Utility classes providing common functionalities.
+        *   `CookieManager.php`: For setting, getting, and deleting cookies securely.
+        *   `SessionManager.php`: For managing user sessions with enhanced security.
+        *   `Validator.php`: For validating input data.
 
-*   **`Admin/`**: Contains all files related to the administration interface.
-    *   `Admin/index.php`: The entry point for the admin section. It has its own configuration loading and routing (`Admin/library/adminRouting.tpl`).
-    *   `Admin/includes/`: Admin-specific include files like headers, footers, and navigation templates (`__Admin__Header.tpl`, etc.).
-    *   `Admin/library/`: Admin-specific library files, notably `adminRouting.tpl`.
-    *   `Admin/view/`: Admin-specific view templates.
+*   **`view/`**: Contains all `.tpl` template files for rendering HTML, organized by module.
+    *   `admin/`: Template files for the Admin portal (e.g., `index.tpl` for login, `404.tpl`).
+    *   `public/`: Template files for the public-facing site (e.g., `index.tpl`, `login.tpl`, `404.tpl`).
 
-*   **`catalog/`**: Contains utility files and common functionalities.
-    *   `functions.tpl`: Likely holds general-purpose PHP functions used across the application.
-    *   `session.tpl`: Manages session starting and handling.
-    *   `validation.tpl`: Could contain data validation functions.
+*   **`includes/`**: Contains shared HTML partials (header, footer, navigation) for the public-facing website (e.g., `__Header.tpl`).
 
-*   **`controller/`**: Contains controller classes that handle business logic and orchestrate responses.
-    *   `accountsController.tpl`: (Initially empty, intended for web-based account actions).
-    *   **`controller/api/`**: Subdirectory specifically for API controllers.
-        *   `accountsApiController.tpl`: Example API controller for managing "accounts" (GET, POST). Responds with JSON.
-    *   `apiController.tpl`: A base API controller providing standardized methods for sending JSON responses (`sendResponse`) and errors (`sendError`).
+*   **`Admin/`**:
+    *   `index.php`: Entry point for the Admin portal.
+    *   `includes/`: Contains shared HTML partials specific to the Admin portal (e.g., `__Admin__Header.tpl`).
+    *   `.htaccess`: Apache configuration specific to the admin directory (if any).
 
-*   **`includes/`**: Contains shared template files for the public-facing website.
-    *   `__Header.tpl`: Site-wide header template.
-    *   `__Footer.tpl`: Site-wide footer template.
-    *   `__Navigation.tpl`: Site-wide navigation template.
+*   **`catalog/`**: Contains remaining procedural helper files.
+    *   `functions.tpl`: Global utility functions (includes `esc_html()`).
+    *   `validation.tpl`: Legacy procedural validation functions (functionality largely superseded by `App\Util\Validator` for new code).
 
-*   **`library/`**: Contains core library files for the framework.
-    *   `routing.tpl`: Handles URL routing for the main website, directing requests to appropriate views/controllers (primarily for HTML pages).
-    *   `apiRouting.tpl`: Handles URL routing for API requests (prefixed with `/api/`), directing them to API controllers.
+*   **`config.tpl`**: Main application configuration file. Initializes constants, PSR-4 autoloader, session, security headers, and includes essential procedural files.
 
-*   **`persistence/`**: Manages data persistence and database interactions.
-    *   `dbContext.tpl`: The data access layer class. It uses PDO and prepared statements for secure database operations (connect, select, insert, update, delete).
+*   **`index.php`**: Main entry point for the public website and API. Detects API calls and routes to `ApiRouter` or web `CoreRouter`.
 
-*   **`view/`**: Contains view templates for the public-facing website.
-    *   `htmlEssentials.tpl`: A class likely responsible for assembling and rendering HTML pages, including headers, footers, and main content by including `.tpl` files from this directory.
-    *   `index.tpl`: The main homepage template.
-    *   Other `.tpl` files here would represent different pages or views.
+*   **`.htaccess`**: Root Apache configuration file, typically for URL rewriting to `index.php`.
 
 ## Basic API Usage
 
