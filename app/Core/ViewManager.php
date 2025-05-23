@@ -15,11 +15,16 @@ class ViewManager { // Renamed from CoreEssentials
      *                                   "__Admin__" for admin site (__Admin__Header.tpl).
      */
     public function __construct(string $templateNamePrefix = "") {
-        // Ensure INC is defined and ends with a slash if needed, or adjust path concatenation.
-        // Assuming INC is like "includes/"
-        $this->headerTplPath     = INC . $templateNamePrefix . "Header.tpl";
-        $this->navigationTplPath = INC . $templateNamePrefix . "Navigation.tpl";
-        $this->footerTplPath     = INC . $templateNamePrefix . "Footer.tpl";
+        // Assuming ROOT is absolute path to project dir (e.g., C:\xampp\htdocs\PHP_Structure\)
+        // and INC is "includes/" (relative to ROOT)
+        
+        $rootPath = rtrim(ROOT, '/\\'); // Normalize ROOT path (double backslash for literal in string)
+        $incPath = trim(INC, '/\\');   // Normalize INC path (double backslash for literal in string)
+
+        // Use DIRECTORY_SEPARATOR for cross-platform compatibility
+        $this->headerTplPath     = $rootPath . DIRECTORY_SEPARATOR . $incPath . DIRECTORY_SEPARATOR . $templateNamePrefix . "Header.tpl";
+        $this->navigationTplPath = $rootPath . DIRECTORY_SEPARATOR . $incPath . DIRECTORY_SEPARATOR . $templateNamePrefix . "Navigation.tpl";
+        $this->footerTplPath     = $rootPath . DIRECTORY_SEPARATOR . $incPath . DIRECTORY_SEPARATOR . $templateNamePrefix . "Footer.tpl";
     }
 
     private function header($title) {
