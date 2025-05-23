@@ -2,9 +2,9 @@
 namespace App\Http\Api;
 
 use App\Http\BaseApiController;
-use App\Interfaces\Service\IAccountService; // Added
-// use App\Persistence\DbContext; // Removed
+use App\Interfaces\Service\IAccountService;
 use App\Util\Validator;
+use App\Model\AccountModel; // Added use statement
 
 /**
  * AccountsController
@@ -37,18 +37,18 @@ class AccountsController {
             case 'GET':
                 if ($id === null) {
                     // Get all accounts
-                    $data = $this->accountService->getAllAccounts();
-                    // getAllAccounts returns an array, empty if none.
-                    $this->api->sendResponse($data);
+                    $accounts = $this->accountService->getAllAccounts(); // Returns AccountModel[]
+                    $responseData = array_map(fn(AccountModel $acc) => $acc->toArray(), $accounts);
+                    $this->api->sendResponse($responseData);
                 } else {
                     // Get a specific account by ID
                     if (!ctype_digit((string)$id) || (int)$id <= 0) { 
                         $this->api->sendError("Invalid account ID format", 400);
                         return;
                     }
-                    $account = $this->accountService->getAccountById((int)$id);
-                    if ($account !== null) {
-                        $this->api->sendResponse($account); 
+                    $accountModel = $this->accountService->getAccountById((int)$id); // Returns ?AccountModel
+                    if ($accountModel !== null) {
+                        $this->api->sendResponse($accountModel->toArray()); 
                     } else {
                         $this->api->sendError("Account not found", 404);
                     }
@@ -68,11 +68,10 @@ class AccountsController {
                 }
 
                 // Data for creation is $requestData, which has been validated.
-                // The service layer expects an array with 'name' and 'email'.
-                $newAccountId = $this->accountService->createAccount($requestData);
+                $newAccountModel = $this->accountService->createAccount($requestData); // Returns ?AccountModel
 
-                if ($newAccountId !== null) {
-                    $this->api->sendResponse(['message' => 'Account created successfully', 'id' => $newAccountId], 201);
+                if ($newAccountModel !== null) {
+                    $this->api->sendResponse($newAccountModel->toArray(), 201); // Return full model
                 } else {
                     $this->api->sendError("Failed to create account", 500);
                 }
