@@ -12,15 +12,15 @@
       }
 
       if ($isApiRequest) {
-          require_once LIB."apiRouting.tpl"; // Load API router
-          $app = new ApiRouting();
+          // require_once LIB."apiRouting.tpl"; // Removed, ApiRouter is autoloaded
+          $app = new \App\Http\ApiRouter(); // Use FQN
       } else {
           // Web router uses CoreRouter
-          require_once LIB."CoreRouter.tpl";
+          // require_once LIB."CoreRouter.tpl"; // Removed, CoreRouter is autoloaded
           // Parameters for CoreRouter: templateNamePrefix, defaultViewName, defaultTitle, standaloneRoutes
-          // CoreEssentials is now loaded via config.tpl
+          // CoreEssentials (now ViewManager) is autoloaded via App\Core namespace
           // "index" is the default view/title. "Login" is a standalone page.
           // The templateNamePrefix for the main site is an empty string.
-          $app = new CoreRouter("", "index", "index", ["Login"]);
+          $app = new \App\Core\CoreRouter("", "index", "index", ["Login"]); // Use FQN
       }
 ?>
