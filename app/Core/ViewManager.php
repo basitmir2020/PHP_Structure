@@ -41,7 +41,24 @@ class ViewManager { // Renamed from CoreEssentials
      */
     public function body(string $bodyViewName, string $title, $arg = false, bool $noInclude = false) {
         // The $arg variable will be available within the included $viewFilePath template.
+<<<<<<< HEAD
         $viewFilePath = VIEW . strtolower($bodyViewName) . ".tpl";
+=======
+        
+        // New path construction logic for $viewFilePath
+        $parts = explode('/', $bodyViewName);
+        $viewFile = strtolower(array_pop($parts)) . ".tpl"; // e.g., "index.tpl"
+        $moduleSubPath = implode('/', $parts); // e.g., "public" or "admin"
+
+        // ROOT is absolute path to project root, VIEW is relative path from root (e.g., "view/")
+        if (!empty($moduleSubPath)) {
+            // Ensure correct directory separators, especially for ROOT if it ends with one
+            $viewFilePath = rtrim(ROOT, '/\\') . '/' . rtrim(VIEW, '/\\') . '/' . $moduleSubPath . '/' . $viewFile;
+        } else {
+            // Fallback if no module path, though router should always provide it now
+            $viewFilePath = rtrim(ROOT, '/\\') . '/' . rtrim(VIEW, '/\\') . '/' . $viewFile;
+        }
+>>>>>>> cc4ee689bdc1f642d96f230e284fd6de713c3d61
 
         if ($noInclude) {
             include $viewFilePath;
