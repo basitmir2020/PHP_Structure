@@ -26,13 +26,6 @@ class ApiRouting {
         $url = rtrim($url, "/");
         $urlParts = explode("/", $url); // e.g., [api, accounts, 123] or [accounts, 123] if base 'api' is stripped by index.php
 
-        // Assuming index.php ensures $urlParts[0] is 'api' and might strip it.
-        // If index.php passes the full path like 'api/accounts/1', then $urlParts[0] is 'api'.
-        // The routing logic in the original routing.tpl was:
-        // $resource = $url[1] ?? null; $id = $url[2] ?? null;
-        // This implies the $url array passed to the old logic was already split.
-        // For ApiRouting, we get the full $_GET['url'] again.
-
         $api = new ApiController();
 
         // We expect the URL to be like "api/resource/id"

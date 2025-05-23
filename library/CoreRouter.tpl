@@ -1,5 +1,4 @@
 <?php
-<?php
     // CoreEssentials class is expected to be available (e.g. included via config.tpl or autoloader)
     class CoreRouter {
         private $templateNamePrefix; // Changed from essentialsClassName
@@ -70,5 +69,4 @@
             }
         }
     }
-?>
 ?>

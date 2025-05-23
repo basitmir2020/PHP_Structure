@@ -3,7 +3,7 @@
     define("ADMIN_PATH",WEBPATH.'Admin/');
     define('SESSIONTIME',$_SERVER['REQUEST_TIME']);
     define('TIMEOUT',3600);
-    include('catalog/session.tpl');
+    include('catalog/session.tpl'); // Should this be require_once? For now, keeping as include.
     session::start();
     error_reporting(E_ALL);
     // For production APIs, consider setting ini_set('display_errors', '0');
@@ -23,8 +23,8 @@
     define("SCRIPTS",WEBPATH."js/");
     define("STYLES",WEBPATH."css/");
     define("LIB","library/");
-    define("ROOT",dirname(__FILE__)."\\");
-    define("UPLOAD_PATH",ROOT."img\\uploads\\");
+    define("ROOT",dirname(__FILE__)."\\"); // Consider using / for cross-platform compatibility if issues arise
+    define("UPLOAD_PATH",ROOT."img\\uploads\\"); // Same as above for path separator
     define("VIEW","view/");
     define("VENDOR",WEBPATH.'vendor/');
     define("FONTS",WEBPATH."fonts/");
@@ -54,5 +54,5 @@
     define('DBHOST','localhost');
     define('DBUSER','root');
     define('DBPASS','');
-    define('DBNAME','');
+    define('DBNAME',''); // Database name should be configured for a working application
 ?>
