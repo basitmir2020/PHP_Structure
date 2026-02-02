@@ -1,7 +1,7 @@
 <?php
 namespace App\Config;
 
-use Dotenv\Dotenv;
+
 
 class Bootstrap
 {
@@ -32,15 +32,13 @@ class Bootstrap
             require_once dirname(__DIR__, 2) . '/catalog/functions.tpl';
         }
 
-        // Load Environment Variables
-        if (class_exists('Dotenv\Dotenv')) {
-            $dotenv = Dotenv::createImmutable(dirname(__DIR__, 2));
-            $dotenv->safeLoad(); // Use safeLoad to avoid error if .env is missing
-        } else {
-            // Manual .env loading if Dotenv is missing (basic fallback)
-            self::loadEnvManually();
+        // Load Configuration
+        // Note: Config.php should be created by setup.php from ConfigTemplate.php
+        $configPath = dirname(__DIR__) . '/Config/Config.php';
+        if (!file_exists($configPath) && file_exists(dirname(__DIR__) . '/Config/ConfigTemplate.php')) {
+            // Just specific for first run if setup.php wasn't run, though setup.php is recommended.
+            // We won't auto-copy here to avoid permission issues, but we might warn or just fail gracefully.
         }
-
 
         // Start Session
         if (session_status() === PHP_SESSION_NONE) {
@@ -50,7 +48,7 @@ class Bootstrap
         // Set Timezone
         date_default_timezone_set("Asia/Kolkata");
 
-        // Define Constants (Legacy support, transition to Env/Config)
+        // Define Constants
         self::defineConstants();
 
         // Apply Security Headers
@@ -59,15 +57,18 @@ class Bootstrap
 
     private static function defineConstants()
     {
-        define("WEBPATH", $_ENV['APP_URL'] . '/');
-        // Define other path constants if needed by legacy code
-        // Ideally, these should be removed in favor of relative paths or config classes
-        // But keeping them for now to ensure compatibility with existing templates/controllers
+        // Check if Config class exists, avoiding error if setup hasn't run
+        if (!class_exists('App\Config\Config')) {
+            return;
+        }
+
+        define("WEBPATH", \App\Config\Config::APP_URL . '/');
+        // Define other path constants
         define("ROOT", dirname(__DIR__, 2) . DIRECTORY_SEPARATOR);
         define("VIEW", "view/");
         define("INC", "includes/");
         define("IMAGES", WEBPATH . "img/");
-        define("ADMIN_PATH", WEBPATH . 'admin/'); // Assuming Admin module url
+        define("ADMIN_PATH", WEBPATH . 'admin/');
     }
 
     private static function applySecurityHeaders()
@@ -77,8 +78,12 @@ class Bootstrap
         header("Referrer-Policy: strict-origin-when-cross-origin");
 
         // CORS Setup
+        if (!class_exists('App\Config\Config')) {
+            return;
+        }
+
         if (isset($_SERVER['HTTP_ORIGIN'])) {
-            $allowedOrigins = explode(',', $_ENV['CORS_ALLOWED_ORIGINS'] ?? '');
+            $allowedOrigins = \App\Config\Config::CORS_ALLOWED_ORIGINS;
             if (in_array('*', $allowedOrigins) || in_array($_SERVER['HTTP_ORIGIN'], $allowedOrigins)) {
                 header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);
                 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
@@ -95,21 +100,6 @@ class Bootstrap
                 header("Access-Control-Allow-Headers: {$_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']}");
             }
             exit(0);
-        }
-    }
-
-    private static function loadEnvManually()
-    {
-        $path = dirname(__DIR__, 2) . '/.env';
-        if (!file_exists($path)) {
-            return;
-        }
-        $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-        foreach ($lines as $line) {
-            if (strpos(trim($line), '#') === 0)
-                continue;
-            list($name, $value) = explode('=', $line, 2);
-            $_ENV[trim($name)] = trim($value);
         }
     }
 }

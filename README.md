@@ -1,6 +1,6 @@
 # PHP Modular Boilerplate
 
-This project is a modern, secure, and highly configurable PHP boilerplate designed for both MVC web applications and API-first development. It features a namespaced architecture, a public-facing webroot, and a modular design for easy scalability.
+This project is a modern, secure, and highly configurable PHP boilerplate designed for both MVC web applications and API-first development. It features a namespaced architecture, a public-facing webroot, and a modular design.
 
 ## Quick Start (3 Steps)
 
@@ -10,21 +10,21 @@ Open a terminal in the project root and run:
 php bin/setup.php
 ```
 This will:
-*   Create your `.env` configuration file from `.env.example`.
-*   Establish basic database tables (if credentials are correct in `.env`).
+*   Generate `app/Config/Config.php` from `app/Config/ConfigTemplate.php`.
+*   Establish basic database tables (using defaults or your existing Config).
 
-### 2. Configure Environment
-Open `.env` and set your database credentials:
-```ini
-DB_HOST=localhost
-DB_NAME=php_structure_db
-DB_USER=root
-DB_PASS=
+### 2. Configure Project
+Open `app/Config/Config.php` and set your credentials:
+```php
+class Config {
+    const DB_HOST = 'localhost';
+    const DB_NAME = 'php_structure_db';
+    // ...
+}
 ```
-You can also configure **CORS** here (`CORS_ALLOWED_ORIGINS`) if you are connecting a React/Angular frontend.
 
 ### 3. Point Web Server
-**CRITICAL SECURITY STEP**: Point your web server (Apache/Nginx/XAMPP) document root to the `public/` folder, NOT the project root.
+**CRITICAL SECURITY STEP**: Point your web server (Apache/Nginx/XAMPP) document root to the `public/` folder.
 *   **URL Example**: `http://localhost/PHP_Structure/public/`
 
 ---
@@ -32,51 +32,38 @@ You can also configure **CORS** here (`CORS_ALLOWED_ORIGINS`) if you are connect
 ## Key Features
 
 ### 🔐 Security First
-*   **Public Directory**: `index.php` and assets (`css`, `js`, `img`) are located in `public/`. Access to core application logic (`app/`) is blocked from the browser.
-*   **Environment Variables**: Sensitive credentials are stored in `.env` (git-ignored) using `vlucas/phpdotenv`.
-*   **Security Headers**: Built-in protection (CSP, X-Frame-Options, HSTS) applied in `app/Config/Bootstrap.php`.
+*   **Public Directory**: `index.php` and assets are in `public/`.
+*   **PHP Configuration**: Credentials are stored in `app/Config/Config.php` (git-ignored) - no external parsing needed.
+*   **Security Headers**: Built-in protection (CSP, X-Frame-Options) in `app/Config/Bootstrap.php`.
 
 ### 🧩 Modular Architecture
-Easily add new sections (e.g., "VendorPortal", "Admin") without touching core files.
-1.  **Register**: Add your module to `app/Config/Modules.php`.
-    ```php
-    'VendorPortal' => ['default_controller' => 'Dashboard', 'default_method' => 'index']
-    ```
-2.  **Create**: Add your controller in `app/Controller/VendorPortal/DashboardController.php`.
-3.  **Access**: Go to `/vendorportal` - routing is handled automatically.
+Easily add new sections (e.g., "VendorPortal") via `app/Config/Modules.php`.
 
 ### 🔌 API Ready
-*   **Dedicated Routing**: Routes starting with `/api` are handled by `App\Http\ApiRouter`.
-*   **Frontend Compatible**: Built-in CORS support allows secure integration with single-page applications (React, Angular, Vue).
+*   **API Prefix**: Routes starting with `/api` are automatically handled.
+*   **Frontend Ready**: Configure `CORS_ALLOWED_ORIGINS` in `app/Config/Config.php`.
 
 ## Project Structure
 
 ```
 /
-├── .env                <-- Local configuration (git-ignored)
 ├── bin/
-│   └── setup.php       <-- CLI setup helper
-├── public/             <-- DOCUMENT ROOT (Point web server here)
-│   ├── index.php       <-- Main entry point
-│   ├── css/
-│   └── js/
+├── public/             <-- DOCUMENT ROOT
 ├── app/
 │   ├── Config/
-│   │   ├── Bootstrap.php <-- App initialization and headers
-│   │   └── Modules.php   <-- Module registration
-│   ├── Controller/       <-- MVC Controllers (Admin/, Public/)
-│   ├── Http/             <-- API Controllers & Router
-│   ├── Model/            <-- Data Models
-│   ├── Service/          <-- Business Logic
-│   └── Core/             <-- Framework Core (Router, ViewManager)
-├── view/                 <-- HTML Templates (.tpl)
+│   │   ├── Config.php  <-- Main Configuration (Created by setup)
+│   │   ├── Modules.php
+│   │   └── Bootstrap.php
+│   ├── Controller/
+│   ├── Http/
+│   └── ...
 └── composer.json
 ```
 
 ## Api Usage
 
 The base path for all API routes is `/api`.
-**Authentication**: Include `X-API-KEY` header with a key defined in `.env`.
+**Authentication**: Include `X-API-KEY` header with a key defined in `app/Config/Config.php`.
 
 *   **GET** `/api/accounts`: List accounts.
 *   **GET** `/api/accounts/{id}`: Get account details.
