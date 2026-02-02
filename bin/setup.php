@@ -3,43 +3,40 @@
 $root = dirname(__DIR__);
 echo "Setting up PHP Boilerplate...\n";
 
-// 1. Copy .env
-if (!file_exists($root . '/.env')) {
-    if (file_exists($root . '/.env.example')) {
-        copy($root . '/.env.example', $root . '/.env');
-        echo "Created .env file.\n";
+// 1. Create Config.php
+$configPath = $root . '/app/Config/Config.php';
+$templatePath = $root . '/app/Config/ConfigTemplate.php';
+
+if (!file_exists($configPath)) {
+    if (file_exists($templatePath)) {
+        copy($templatePath, $configPath);
+        echo "Created app/Config/Config.php from template.\n";
     } else {
-        echo "Error: .env.example not found.\n";
+        echo "Error: app/Config/ConfigTemplate.php not found.\n";
+        exit(1);
     }
 } else {
-    echo ".env already exists.\n";
+    echo "app/Config/Config.php already exists.\n";
 }
 
-// 2. Load Env (Manual, since Composer might not be run)
-$env = [];
-if (file_exists($root . '/.env')) {
-    $lines = file($root . '/.env', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    foreach ($lines as $line) {
-        if (strpos(trim($line), '#') === 0)
-            continue;
-        list($name, $value) = explode('=', $line, 2);
-        $env[trim($name)] = trim($value);
-    }
-}
+// 2. Load Config to setup Database
+require_once $configPath;
+use App\Config\Config;
 
 // 3. Database Setup
-echo "setting up Database... (Host: " . ($env['DB_HOST'] ?? 'unknown') . ")\n";
-if (isset($env['DB_HOST'], $env['DB_NAME'], $env['DB_USER'])) {
+echo "setting up Database... (Host: " . Config::DB_HOST . ")\n";
+
+if (defined('App\Config\Config::DB_HOST') || (class_exists('App\Config\Config') && Config::DB_HOST)) {
     try {
-        $dsn = "mysql:host={$env['DB_HOST']};charset=utf8mb4";
-        $pdo = new PDO($dsn, $env['DB_USER'], $env['DB_PASS'] ?? '');
+        $dsn = "mysql:host=" . Config::DB_HOST . ";charset=utf8mb4";
+        $pdo = new PDO($dsn, Config::DB_USER, Config::DB_PASS);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
         // Create Database
-        $pdo->exec("CREATE DATABASE IF NOT EXISTS `{$env['DB_NAME']}`");
-        echo "Database `{$env['DB_NAME']}` check/creation successful.\n";
+        $pdo->exec("CREATE DATABASE IF NOT EXISTS `" . Config::DB_NAME . "`");
+        echo "Database `" . Config::DB_NAME . "` check/creation successful.\n";
 
-        $pdo->exec("USE `{$env['DB_NAME']}`");
+        $pdo->exec("USE `" . Config::DB_NAME . "`");
 
         // Create Accounts Table
         $sql = "CREATE TABLE IF NOT EXISTS accounts (
@@ -54,9 +51,9 @@ if (isset($env['DB_HOST'], $env['DB_NAME'], $env['DB_USER'])) {
         echo "Database Setup Failed: " . $e->getMessage() . "\n";
     }
 } else {
-    echo "Skipping Database setup: Credentials missing in .env.\n";
+    echo "Skipping Database setup: Credentials missing in Config.\n";
 }
 
 echo "\nSetup Complete!\n";
-echo "Run 'composer install' to install dependencies.\n";
+echo "Run 'composer install' to install dependencies (if any).\n";
 echo "Point your web server to '{$root}/public'.\n";

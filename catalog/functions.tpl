@@ -20,21 +20,8 @@
        return $hexaToken;
     }
 
-	function encrypt($param){
-		$param = baseEncode(baseEncode(md5(sha1(md5(sha1(md5($param)))))));
-		return $param;
-	}
-
-    function getMessages($param){
-	    switch ($param){
-            case "success":
-                return "1";
-            case "updated":
-                return "2";
-            default:
-                return $param;
-        }
-    }
+    // Deprecated/Insecure functions removed: encrypt, Password_Encryption, Generate_Salt, Password_Check.
+    // Use PHP's native password_hash() and password_verify() instead.
 
 	function baseEncode($param){
 		return base64_encode($param);
@@ -43,32 +30,6 @@
 	function baseDecode($param){
 		return base64_decode($param);
 	}
-
-	function Password_Encryption($param){
-	    $BlowFish_Hash_Format = "$2y$10$";
-	    $Salt_Length = 22;
-	    $Salt = Generate_Salt($Salt_Length);
-	    $Formating_Blowfish_With_Salt = $BlowFish_Hash_Format .$Salt;
-	    $Hash = crypt($param,$Formating_Blowfish_With_Salt);
-	    return $Hash;
-    }
-
-    function Generate_Salt($param){
-	    $Unique_Random_String = md5(uniqid(mt_rand(),true));
-	    $Base64_String = baseEncode($Unique_Random_String);
-	    $Modified_Base64_String = str_replace('+','.',$Base64_String);
-	    $Salt = substr($Modified_Base64_String,0,$param);
-	    return $Salt;
-    }
-
-    function Password_Check($Password,$Existing_Hash){
-        $Hash = crypt($Password,$Existing_Hash);
-        if($Hash === $Existing_Hash){
-            return true;
-        }else{
-            return false;
-        }
-    }
 
     function sendMail(userModel $user){
         $to_email = $user->getEmail();
