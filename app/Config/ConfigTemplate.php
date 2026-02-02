@@ -13,8 +13,11 @@ class Config
     const APP_URL = 'http://localhost/PHP_Structure/public';
     const APP_ENV = 'local'; // Options: local, production
 
+    const SENDER_EMAIL = 'no-reply@example.com';
+    const SENDER_NAME = 'My App';
+
     // Security
-    const API_KEYS = ['your-super-secret-api-key-12345']; // Array of valid API keys
-    const CORS_ALLOWED_ORIGINS = ['*']; // Array of allowed origins, e.g. ['http://localhost:3000']
+    const API_KEYS = ['your-super-secret-api-key-12345'];
+    const CORS_ALLOWED_ORIGINS = ['*'];
     const SESSION_LIFETIME = 3600; // Session lifetime in seconds (default 1 hour)
 }

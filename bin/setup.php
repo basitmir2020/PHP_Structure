@@ -76,10 +76,23 @@ if (defined('App\Config\Config::DB_HOST') || (class_exists('App\Config\Config') 
         $sql = "CREATE TABLE IF NOT EXISTS accounts (
             id INT AUTO_INCREMENT PRIMARY KEY,
             name VARCHAR(255) NOT NULL,
-            email VARCHAR(255) NOT NULL UNIQUE
+            email VARCHAR(255) NOT NULL UNIQUE,
+            password VARCHAR(255) NOT NULL,
+            reset_token VARCHAR(64) NULL,
+            reset_expires DATETIME NULL
         )";
         $pdo->exec($sql);
         echo "Table `accounts` check/creation successful.\n";
+
+        // Insert Default Admin if not exists
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM accounts WHERE email = ?");
+        $stmt->execute(['admin@example.com']);
+        if ($stmt->fetchColumn() == 0) {
+            $pass = password_hash('admin123', PASSWORD_DEFAULT);
+            $pdo->prepare("INSERT INTO accounts (name, email, password) VALUES (?, ?, ?)")
+                ->execute(['Admin', 'admin@example.com', $pass]);
+            echo "Default Admin User created (admin@example.com / admin123)\n";
+        }
 
     } catch (PDOException $e) {
         echo "Database Setup Failed: " . $e->getMessage() . "\n";

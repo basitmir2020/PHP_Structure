@@ -113,3 +113,10 @@ server {
 2.  Navigate to your URL (e.g., `http://localhost/project/public` or `http://project.local`).
 3.  You should see the "Welcome" page.
 4.  Visit `/public/demo` to verify that routing and the database are working correctly.
+
+## 🔐 Built-in Authentication
+The framework includes a fully functional Login and Password Reset system.
+*   **Default Admin**: Email: `admin@example.com`, Password: `admin123`
+*   **Login URL**: `/public/login`
+*   **Dashboard**: `/admin/dashboard`
+*   See [**docs/AUTH.md**](AUTH.md) for full details.

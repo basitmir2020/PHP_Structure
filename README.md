@@ -60,6 +60,7 @@ Easily add new sections (e.g., "VendorPortal") via `app/Config/Modules.php`.
 ## 📚 Documentation
 *   [**Database & Stored Procedures**](docs/DATABASE.md): Learn how to query data and call procedures.
 *   [**Routing & Architecture**](docs/ROUTING.md): Understand the folder structure and URL mapping.
+*   [**Authentication System**](docs/AUTH.md): Guide to Login, Password Reset, and Dashboard.
 *   [**Security Guidelines**](docs/SECURITY.md): Best practices for keeping the app secure.
 *   [**Demo Pages**](public/demo): Visit `/public/demo` in your browser for a live interactive guide.
 
