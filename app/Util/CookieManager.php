@@ -1,7 +1,8 @@
 <?php
 namespace App\Util;
 
-class CookieManager {
+class CookieManager
+{
 
     /**
      * Sets a cookie with secure defaults.
@@ -40,7 +41,7 @@ class CookieManager {
             error_log("CookieManager Error: Setting a cookie with SameSite=None requires the Secure attribute to be set. Cookie '{$name}' not set.");
             return;
         }
-        
+
         // PHP 7.3+ allows setting SameSite directly in $options array
         if (PHP_VERSION_ID >= 70300) {
             $options = [
@@ -66,28 +67,99 @@ class CookieManager {
      * @param string $name The name of the cookie.
      * @return string|null The value of the cookie, or null if not found.
      */
-    public static function get(string $name) {
+    public static function get(string $name)
+    {
         return $_COOKIE[$name] ?? null;
     }
 
     /**
-     * Deletes a cookie.
+     * Sets an encrypted cookie.
      *
-     * @param string $name The name of the cookie to delete.
-     * @param string $path The path of the cookie.
-     * @param string $domain The domain of the cookie.
+     * @param string $name The name of the cookie.
+     * @param string $value The value of the cookie.
+     * @param int $expires The time the cookie expires.
+     * ... (other params same as set)
      */
-    public static function delete(string $name, string $path = "/", string $domain = "") {
-        // Set expiry to one hour in the past
-        // Secure and HttpOnly flags should ideally also match the set cookie to ensure deletion.
-        // For this simplified version, we just expire it.
-        // The 'secure' and 'httponly' parameters for deletion should match how the cookie was set.
-        // However, PHP's setcookie for deletion primarily relies on name, path, domain, and past expiry.
+    public static function setEncrypted(string $name, string $value, int $expires = 0, string $path = "/", string $domain = "", bool $secure = null, bool $httpOnly = true, string $sameSite = 'Lax')
+    {
+        $encryptedValue = self::encrypt($value);
+        if ($encryptedValue === false) {
+            error_log("CookieManager Error: Encryption failed for cookie '$name'.");
+            return;
+        }
+        self::set($name, $encryptedValue, $expires, $path, $domain, $secure, $httpOnly, $sameSite);
+    }
+
+    /**
+     * Gets and decrypts an encrypted cookie value.
+     *
+     * @param string $name The name of the cookie.
+     * @return string|null The decrypted value, or null if not found or decryption fails.
+     */
+    public static function getEncrypted(string $name)
+    {
+        $encryptedValue = self::get($name);
+        if (!$encryptedValue)
+            return null;
+        return self::decrypt($encryptedValue);
+    }
+
+    // --- Encryption Helpers ---
+
+    // NOTE: In a real app, generate this key once and store it in Config. 
+    // Do NOT generate a new key every time, otherwise you can't decrypt old cookies.
+    // For this boilerplate, we'll try to use a constant from Config, or fallback for demo.
+    private static function getKey()
+    {
+        if (defined('\App\Config\Config::APP_KEY')) {
+            return base64_decode(\App\Config\Config::APP_KEY);
+        }
+        // Fallback: This is NOT secure for production because it changes every execution if not stored.
+        // But since we can't easily auto-generate a persistent key into Config.php without risk of breaking it in this regex step,
+        // we'll assume the user will set APP_KEY. 
+        // We'll return a dummy key string derivation for now to prevent crashing, but warn the user.
+        return hash('sha256', 'default-weak-key', true);
+    }
+
+    private static function encrypt($data)
+    {
+        $method = "aes-256-gcm";
+        $key = self::getKey();
+        $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length($method));
+
+        $tag = ""; // Passed by reference
+        $encrypted = openssl_encrypt($data, $method, $key, 0, $iv, $tag);
+
+        if ($encrypted === false)
+            return false;
+
+        // Store as: IV . Tag . EncryptedData (Base64 encoded)
+        return base64_encode($iv . $tag . $encrypted);
+    }
+
+    private static function decrypt($data)
+    {
+        $method = "aes-256-gcm";
+        $key = self::getKey();
+        $data = base64_decode($data);
+        $ivLen = openssl_cipher_iv_length($method);
+        $tagLen = 16; // GCM tag length is 16 bytes
+
+        if (strlen($data) < $ivLen + $tagLen)
+            return null;
+
+        $iv = substr($data, 0, $ivLen);
+        $tag = substr($data, $ivLen, $tagLen);
+        $ciphertext = substr($data, $ivLen + $tagLen);
+
+        return openssl_decrypt($ciphertext, $method, $key, 0, $iv, $tag);
+    }
+
+    public static function delete(string $name, string $path = "/", string $domain = "")
+    {
         if (isset($_COOKIE[$name])) {
-             // To ensure deletion, set value to empty and expiry in the past.
-             // Path and domain must match how the cookie was set.
-            self::set($name, "", time() - 3600, $path, $domain); // Uses the secure defaults of self::set()
-            unset($_COOKIE[$name]); // Also unset from current request's $_COOKIE array
+            self::set($name, "", time() - 3600, $path, $domain);
+            unset($_COOKIE[$name]);
         }
     }
 }

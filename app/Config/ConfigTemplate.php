@@ -1,7 +1,7 @@
 <?php
 namespace App\Config;
 
-class Config
+class ConfigTemplate
 {
     // Database Configuration
     const DB_HOST = 'localhost';
@@ -12,6 +12,7 @@ class Config
     // Application Settings
     const APP_URL = 'http://localhost/PHP_Structure/public';
     const APP_ENV = 'local'; // Options: local, production
+    const APP_KEY = ''; // Generate a 32-byte key (base64 encoded) for cookie encryption
 
     const SENDER_EMAIL = 'no-reply@example.com';
     const SENDER_NAME = 'My App';

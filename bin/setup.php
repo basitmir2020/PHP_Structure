@@ -28,6 +28,7 @@ if (!file_exists($configPath)) {
         $configContent = file_get_contents($templatePath);
 
         // Dynamic Replacements
+        $configContent = str_replace('class ConfigTemplate', 'class Config', $configContent);
         $configContent = str_replace('php_structure_db', str_replace('-', '_', $projectSlug) . '_db', $configContent);
         $configContent = str_replace('/PHP_Structure/', "/$folderName/", $configContent);
 

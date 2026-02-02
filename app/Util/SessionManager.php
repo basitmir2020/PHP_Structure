@@ -27,6 +27,11 @@ class SessionManager
         if (self::sessionIPSec()) { // self:: is fine
             if (self::sessionBrowserSec()) { // self:: is fine
                 self::sessionTimeout(); // self:: is fine
+
+                // Prevent Caching for Authenticated Sessions
+                header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+                header("Cache-Control: post-check=0, pre-check=0", false);
+                header("Pragma: no-cache");
             } else {
                 unset($_SESSION['admin_user']);
                 unset($_SESSION['UA']);
