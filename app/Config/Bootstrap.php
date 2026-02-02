@@ -73,9 +73,20 @@ class Bootstrap
 
     private static function applySecurityHeaders()
     {
+        // Prevent MIME type sniffing
         header("X-Content-Type-Options: nosniff");
+        // Prevent clickjacking
         header("X-Frame-Options: SAMEORIGIN");
+        // strict Referrer Policy
         header("Referrer-Policy: strict-origin-when-cross-origin");
+        // HTTP Strict Transport Security (HSTS) - 1 year, include subdomains
+        if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
+            header("Strict-Transport-Security: max-age=31536000; includeSubDomains");
+        }
+        // Content Security Policy (Basic default - can be adjusted per project needs)
+        // Allowing 'self', inline scripts/styles (for now, to avoid breaking existing code), and data images.
+        // In a strict environment, 'unsafe-inline' should be removed.
+        header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; object-src 'none'; frame-ancestors 'self';");
 
         // CORS Setup
         if (!class_exists('App\Config\Config')) {
