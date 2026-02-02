@@ -50,15 +50,18 @@ Easily add new sections (e.g., "VendorPortal") via `app/Config/Modules.php`.
 ├── bin/
 ├── public/             <-- DOCUMENT ROOT
 ├── app/
-│   ├── Config/
-│   │   ├── Config.php  <-- Main Configuration (Created by setup)
-│   │   ├── Modules.php
-│   │   └── Bootstrap.php
-│   ├── Controller/
-│   ├── Http/
-│   └── ...
+├── docs/               <-- DOCUMENTATION
+│   ├── DATABASE.md
+│   ├── ROUTING.md
+│   └── SECURITY.md
 └── composer.json
 ```
+
+## 📚 Documentation
+*   [**Database & Stored Procedures**](docs/DATABASE.md): Learn how to query data and call procedures.
+*   [**Routing & Architecture**](docs/ROUTING.md): Understand the folder structure and URL mapping.
+*   [**Security Guidelines**](docs/SECURITY.md): Best practices for keeping the app secure.
+*   [**Demo Pages**](public/demo): Visit `/public/demo` in your browser for a live interactive guide.
 
 ## Api Usage
 
