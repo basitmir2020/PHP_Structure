@@ -2,7 +2,8 @@
 namespace App\Core;
 
 // Constants INC and VIEW are expected to be defined (typically in config.tpl)
-class ViewManager { // Renamed from CoreEssentials
+class ViewManager
+{ // Renamed from CoreEssentials
     private $headerTplPath;
     private $navigationTplPath;
     private $footerTplPath;
@@ -14,10 +15,11 @@ class ViewManager { // Renamed from CoreEssentials
      * @param string $context The context for loading views (e.g., "public", "admin").
      *                        Determines the subdirectory under includes/ for partials.
      */
-    public function __construct(string $context) { // Changed parameter
+    public function __construct(string $context)
+    { // Changed parameter
         // Assuming ROOT is absolute path to project dir (e.g., C:\xampp\htdocs\PHP_Structure\)
         // and INC is "includes/" (relative to ROOT)
-        
+
         $rootPath = rtrim(ROOT, '/\\'); // Normalize ROOT path
         $incRootFolderName = trim(INC, '/\\');   // Normalize INC path (e.g. "includes")
 
@@ -25,17 +27,19 @@ class ViewManager { // Renamed from CoreEssentials
         $this->baseIncludePath = $rootPath . DIRECTORY_SEPARATOR . $incRootFolderName . DIRECTORY_SEPARATOR . $context . DIRECTORY_SEPARATOR;
 
         // Filenames are now generic as the context directory handles the distinction
-        $this->headerTplPath     = $this->baseIncludePath . "Header.tpl";
-        $this->navigationTplPath = $this->baseIncludePath . "Navigation.tpl";
-        $this->footerTplPath     = $this->baseIncludePath . "Footer.tpl";
+        $this->headerTplPath = $this->baseIncludePath . "Header.php";
+        $this->navigationTplPath = $this->baseIncludePath . "Navigation.php";
+        $this->footerTplPath = $this->baseIncludePath . "Footer.php";
     }
 
-    private function header($title) {
+    private function header($title)
+    {
         // The $title variable will be available within the included header template.
         include $this->headerTplPath;
     }
 
-    private function navigation() {
+    private function navigation()
+    {
         include $this->navigationTplPath;
     }
 
@@ -47,12 +51,13 @@ class ViewManager { // Renamed from CoreEssentials
      * @param mixed $arg Optional argument to be available to the body view template.
      * @param bool $noInclude If true, only the body view template is rendered. Otherwise, full layout is rendered.
      */
-    public function body(string $bodyViewName, string $title, $arg = false, bool $noInclude = false) {
+    public function body(string $bodyViewName, string $title, $arg = false, bool $noInclude = false)
+    {
         // The $arg variable will be available within the included $viewFilePath template.
-        
+
         // New path construction logic for $viewFilePath
         $parts = explode('/', $bodyViewName);
-        $viewFile = strtolower(array_pop($parts)) . ".tpl"; // e.g., "index.tpl"
+        $viewFile = strtolower(array_pop($parts)) . ".php"; // e.g., "index.php"
         $moduleSubPath = implode('/', $parts); // e.g., "public" or "admin"
 
         // ROOT is absolute path to project root, VIEW is relative path from root (e.g., "view/")
@@ -74,7 +79,8 @@ class ViewManager { // Renamed from CoreEssentials
         }
     }
 
-    private function footer() {
+    private function footer()
+    {
         include $this->footerTplPath;
     }
 }

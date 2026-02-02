@@ -28,8 +28,8 @@ class Bootstrap
         }
 
         // Load Catalog Functions (Legacy)
-        if (file_exists(dirname(__DIR__, 2) . '/catalog/functions.tpl')) {
-            require_once dirname(__DIR__, 2) . '/catalog/functions.tpl';
+        if (file_exists(dirname(__DIR__, 2) . '/catalog/functions.php')) {
+            require_once dirname(__DIR__, 2) . '/catalog/functions.php';
         }
 
         // Load Configuration
