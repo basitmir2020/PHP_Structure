@@ -3,20 +3,54 @@
 $root = dirname(__DIR__);
 echo "Setting up PHP Boilerplate...\n";
 
-// 1. Create Config.php
+// 1. Interactive Configuration
+echo "--------------------------------------------------\n";
+echo "Welcome to the Project Setup Wizard\n";
+echo "--------------------------------------------------\n";
+
+$projectName = readline("Enter Project Name (e.g. My Cool App): ");
+$projectSlug = strtolower(trim(str_replace(' ', '-', $projectName)));
+if (empty($projectSlug))
+    $projectSlug = 'php-structure';
+
+$folderName = readline("Enter Installation Folder Name (e.g. php-structure): ");
+if (empty($folderName))
+    $folderName = 'PHP_Structure';
+
+echo "\nConfiguring project as: '$projectName' ($projectSlug)\n";
+
+// 2. Create Config.php
 $configPath = $root . '/app/Config/Config.php';
 $templatePath = $root . '/app/Config/ConfigTemplate.php';
 
 if (!file_exists($configPath)) {
     if (file_exists($templatePath)) {
-        copy($templatePath, $configPath);
-        echo "Created app/Config/Config.php from template.\n";
+        $configContent = file_get_contents($templatePath);
+
+        // Dynamic Replacements
+        $configContent = str_replace('php_structure_db', str_replace('-', '_', $projectSlug) . '_db', $configContent);
+        $configContent = str_replace('/PHP_Structure/', "/$folderName/", $configContent);
+
+        file_put_contents($configPath, $configContent);
+        echo "Created app/Config/Config.php with custom settings.\n";
     } else {
         echo "Error: app/Config/ConfigTemplate.php not found.\n";
         exit(1);
     }
 } else {
-    echo "app/Config/Config.php already exists.\n";
+    echo "app/Config/Config.php already exists. Skipping creation.\n";
+}
+
+// 3. Update composer.json
+$composerPath = $root . '/composer.json';
+if (file_exists($composerPath)) {
+    $composerJson = json_decode(file_get_contents($composerPath), true);
+    if ($composerJson) {
+        $composerJson['name'] = "custom-project/$projectSlug";
+        $composerJson['description'] = $projectName;
+        file_put_contents($composerPath, json_encode($composerJson, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        echo "Updated composer.json identity.\n";
+    }
 }
 
 // 2. Load Config to setup Database
