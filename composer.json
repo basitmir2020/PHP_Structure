@@ -1,0 +1,24 @@
+{
+    "name": "php-structure/boilerplate",
+    "description": "A modular PHP MVC and API boilerplate",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Antigravity",
+            "email": "antigravity@example.com"
+        }
+    ],
+    "require": {
+        "php": "^7.4 || ^8.0",
+        "vlucas/phpdotenv": "^5.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        },
+        "files": [
+            "catalog/functions.tpl"
+        ]
+    }
+}

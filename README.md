@@ -1,112 +1,88 @@
-# PHP MVC and API Framework
+# PHP Modular Boilerplate
 
-This project is a PHP application built to serve as a foundational framework for developing web applications and JSON-based APIs. It emphasizes a namespaced, layered architecture following principles similar to Model-View-Controller (MVC), promoting separation of concerns and maintainability.
+This project is a modern, secure, and highly configurable PHP boilerplate designed for both MVC web applications and API-first development. It features a namespaced architecture, a public-facing webroot, and a modular design for easy scalability.
 
-## Getting Started
+## Quick Start (3 Steps)
 
-Follow these instructions to get the project up and running on your local machine.
-
-### Prerequisites
-
-*   **PHP 7.4+**: Ensure you have PHP installed and added to your system's PATH.
-*   **Web Server**: Apache or Nginx.
-    *   **Apache**: Ensure `mod_rewrite` is enabled.
-*   **Database**: MySQL or MariaDB.
-
-### Installation
-
-1.  **Clone the Repository**:
-    ```bash
-    git clone <repository-url>
-    ```
-2.  **Configure Web Server**:
-    *   Point your web server's document root to the project folder (e.g., `c:\Users\basit\Downloads\PHP_Structure`).
-    *   If using Apache, the included `.htaccess` file should handle URL rewriting automatically.
-
-### Database Setup
-
-Since this project does not include a migration system or initial SQL dump, you need to create the database and tables manually.
-
-1.  **Create Database**: Create a new database in MySQL (e.g., `php_structure_db`).
-2.  **Create Tables**: Run the following SQL command to create the `accounts` table (required for the demo API):
-
-    ```sql
-    CREATE TABLE IF NOT EXISTS accounts (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        name VARCHAR(255) NOT NULL,
-        email VARCHAR(255) NOT NULL UNIQUE
-    );
-    ```
-
-### Configuration
-
-1.  Open `config.tpl` in the root directory.
-2.  **Database Configuration**: Update the database connection settings at the bottom of the file:
-    ```php
-    define('DBHOST', 'localhost');
-    define('DBUSER', 'root'); // Your MySQL username
-    define('DBPASS', '');     // Your MySQL password
-    define('DBNAME', 'php_structure_db'); // Your database name
-    ```
-3.  **URL Configuration**: Ensure `WEBPATH` matches your local server environment:
-    ```php
-    define("WEBPATH", "http://localhost/PHP_Structure/");
-    ```
-4.  **API Keys**: Configure valid API keys for authentication:
-    ```php
-    define('VALID_API_KEYS', ['your-super-secret-api-key-12345']);
-    ```
-
-## Project Architecture
-
-**Key Architectural Features:**
-
-*   **Namespaced Codebase:** Organized under the `App\` namespace with PSR-4 autoloading.
-*   **Layered Design:**
-    *   **Controllers (`App\Controller`, `App\Http\Api`):** Handle incoming HTTP requests.
-    *   **Services (`App\Service`):** Encapsulate core business logic.
-    *   **Models (`App\Model`):** Represent data entities.
-    *   **Persistence (`App\Persistence`):** `DbContext` handles secure database interactions.
-*   **Routing:** Custom routing for both web (`App\Core\CoreRouter`) and API (`App\Http\ApiRouter`) requests.
-*   **Security:**
-    *   PDO prepared statements for SQL injection prevention.
-    *   API Key authentication.
-    *   Secure session and cookie management.
-    *   input validation and XSS protection helpers.
-
-### Project Structure
-
-*   **`app/`**: Root directory for all namespaced application code (`App\`).
-    *   **`Core/`**: Framework essentials (`CoreRouter`, `ViewManager`).
-    *   **`Controller/`**: Web controllers (`Admin/`, `Public/`).
-    *   **`Http/`**: API handling (`Api/`, `ApiRouter`).
-    *   **`Interfaces/`**: Service contracts.
-    *   **`Model/`**: Data entities (`AccountModel`).
-    *   **`Persistence/`**: Database access (`DbContext`).
-    *   **`Service/`**: Business logic (`AccountService`).
-    *   **`Util/`**: Utilities (`SessionManager`, `Validator`).
-*   **`view/`**: `.tpl` template files (`admin/`, `public/`).
-*   **`includes/`**: Shared public HTML partials.
-*   **`Admin/`**: Admin portal entry point and assets.
-*   **`catalog/`**: Procedural helper functions.
-*   **`config.tpl`**: Main application configuration.
-*   **`index.php`**: Main entry point.
-
-## Basic API Usage
-
-The base path for all API routes is `/api`.
-
-### Authentication
-
-Include your API key in the `X-API-KEY` header:
-
+### 1. Run Setup Script
+Open a terminal in the project root and run:
 ```bash
-curl -H "X-API-KEY: your-super-secret-api-key-12345" http://localhost/PHP_Structure/api/accounts
+php bin/setup.php
+```
+This will:
+*   Create your `.env` configuration file from `.env.example`.
+*   Establish basic database tables (if credentials are correct in `.env`).
+
+### 2. Configure Environment
+Open `.env` and set your database credentials:
+```ini
+DB_HOST=localhost
+DB_NAME=php_structure_db
+DB_USER=root
+DB_PASS=
+```
+You can also configure **CORS** here (`CORS_ALLOWED_ORIGINS`) if you are connecting a React/Angular frontend.
+
+### 3. Point Web Server
+**CRITICAL SECURITY STEP**: Point your web server (Apache/Nginx/XAMPP) document root to the `public/` folder, NOT the project root.
+*   **URL Example**: `http://localhost/PHP_Structure/public/`
+
+---
+
+## Key Features
+
+### 🔐 Security First
+*   **Public Directory**: `index.php` and assets (`css`, `js`, `img`) are located in `public/`. Access to core application logic (`app/`) is blocked from the browser.
+*   **Environment Variables**: Sensitive credentials are stored in `.env` (git-ignored) using `vlucas/phpdotenv`.
+*   **Security Headers**: Built-in protection (CSP, X-Frame-Options, HSTS) applied in `app/Config/Bootstrap.php`.
+
+### 🧩 Modular Architecture
+Easily add new sections (e.g., "VendorPortal", "Admin") without touching core files.
+1.  **Register**: Add your module to `app/Config/Modules.php`.
+    ```php
+    'VendorPortal' => ['default_controller' => 'Dashboard', 'default_method' => 'index']
+    ```
+2.  **Create**: Add your controller in `app/Controller/VendorPortal/DashboardController.php`.
+3.  **Access**: Go to `/vendorportal` - routing is handled automatically.
+
+### 🔌 API Ready
+*   **Dedicated Routing**: Routes starting with `/api` are handled by `App\Http\ApiRouter`.
+*   **Frontend Compatible**: Built-in CORS support allows secure integration with single-page applications (React, Angular, Vue).
+
+## Project Structure
+
+```
+/
+├── .env                <-- Local configuration (git-ignored)
+├── bin/
+│   └── setup.php       <-- CLI setup helper
+├── public/             <-- DOCUMENT ROOT (Point web server here)
+│   ├── index.php       <-- Main entry point
+│   ├── css/
+│   └── js/
+├── app/
+│   ├── Config/
+│   │   ├── Bootstrap.php <-- App initialization and headers
+│   │   └── Modules.php   <-- Module registration
+│   ├── Controller/       <-- MVC Controllers (Admin/, Public/)
+│   ├── Http/             <-- API Controllers & Router
+│   ├── Model/            <-- Data Models
+│   ├── Service/          <-- Business Logic
+│   └── Core/             <-- Framework Core (Router, ViewManager)
+├── view/                 <-- HTML Templates (.tpl)
+└── composer.json
 ```
 
-### Accounts Endpoint
+## Api Usage
 
-*   **GET** `/api/accounts`: List all accounts.
-*   **GET** `/api/accounts/{id}`: Get account by ID.
-*   **POST** `/api/accounts`: Create a new account.
-    *   Body: `{ "name": "John", "email": "john@example.com" }`
+The base path for all API routes is `/api`.
+**Authentication**: Include `X-API-KEY` header with a key defined in `.env`.
+
+*   **GET** `/api/accounts`: List accounts.
+*   **GET** `/api/accounts/{id}`: Get account details.
+*   **POST** `/api/accounts`: Create account.
+
+## Dependencies
+
+*   **Composer**: Run `composer install` to manage dependencies.
+*   **Fallback**: A manual autoloader is included for environments without Composer access.
